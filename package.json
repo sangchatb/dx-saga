@@ -1,6 +1,6 @@
 {
   "name": "rx-saga",
-  "version": "0.0.1-beta.5",
+  "version": "1.0.0",
   "description": "",
   "keywords": [],
   "main": "dist/index.js",
