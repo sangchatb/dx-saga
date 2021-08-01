@@ -14,7 +14,7 @@ export const makeSelectorChannelFactory =
   ) => {
     const channel = eventChannel<TSelected>((emit) => {
       let lastSelected: TSelected | undefined;
-      const unsub = store.subscribe(() => {
+      const check = () => {
         const state = store.getState();
         const selected = selector(state);
         if (lastSelected === undefined) {
@@ -28,8 +28,9 @@ export const makeSelectorChannelFactory =
         }
         lastSelected = selected;
         emit(selected);
-      });
-
+      };
+      const unsub = store.subscribe(check);
+      check();
       return () => {
         unsub();
       };
