@@ -2,7 +2,7 @@
 
 Warning: This package is in beta and subject to change frequently check back often for the latest.
 
-[![npm version](https://badge.fury.io/js/dx-saga.svg)](https://badge.fury.io/js/dx-saga)
+[![npm version](https://badge.fury.io/js/dx-saga.svg)](https://www.npmjs.com/package/dx-saga)
 
 dx-saga is a JavaScript library allows redux-sagas to run on differences in state as opposed to actions.
 

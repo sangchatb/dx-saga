@@ -1,6 +1,6 @@
 {
   "name": "dx-saga",
-  "version": "0.0.1-beta.3",
+  "version": "0.0.1-beta.4",
   "description": "",
   "keywords": [],
   "main": "dist/index.js",
@@ -33,6 +33,6 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/sangchatb/rx-saga.git"
+    "url": "git+https://github.com/sangchatb/dx-saga.git"
   }
 }
