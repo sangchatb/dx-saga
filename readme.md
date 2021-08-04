@@ -1,10 +1,10 @@
-# ds-saga
+# dx-saga
 
 Warning: This package is in beta and subject to change frequently check back often for the latest.
 
 [![npm version](https://badge.fury.io/js/dx-saga.svg)](https://www.npmjs.com/package/dx-saga)
 
-dx-saga is a JavaScript library allows redux-sagas to run on differences in state as opposed to actions.
+dx-saga is a JavaScript library that allows redux-sagas to run on differences in state as opposed to actions.
 
 - trigger sagas based on differences in state, as opposed to actions, using `selectorChannel`
 - start and stop sagas when components mount and unmount using `useSaga`
