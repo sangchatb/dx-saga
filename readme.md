@@ -29,7 +29,7 @@ yarn add dx-saga
 
 ### Motivation for selector channels
 
-#### `https://codesandbox.io/s/take-latest-action-pattern-tux36?file=/src/index.tsx`
+#### [`https://codesandbox.io/s/take-latest-action-pattern-tux36?file=/src/index.tsx`](https://codesandbox.io/s/take-latest-action-pattern-tux36?file=/src/index.tsx)
 
 ```ts
 const getSearchChanges = (state: RootState): SearchChanges => {
@@ -78,7 +78,7 @@ Reselect provides a function `createSelector` for creating memoized selectors. `
 
 Let's define a selectorChannel named `searchChanges` to replace the action-pattern version above:
 
-#### `https://codesandbox.io/s/selector-channel-qepep?file=/src/index.tsx:1264-1412`
+#### [`https://codesandbox.io/s/selector-channel-qepep?file=/src/index.tsx:1264-1412`](https://codesandbox.io/s/selector-channel-qepep?file=/src/index.tsx:1264-1412)
 
 ```ts
 import { makeSelectorChannelFactory } from "dx-saga";
@@ -118,6 +118,14 @@ store.dispatch(action2);
 ```
 
 In the example above, `searchChanges` is a `selectorChannel`. It tracks differences in the state provided by `getSearchChanges`. It's provided to `takeLatest` which will trigger `handleSearchChanges` when it detects changes. Since it's provided as a channel, any `takeX` effect can be used. `takeLatest` will also cancel any `handleSearchChanges` side-effects that are still executing.
+
+## useSaga
+
+Coming Soon
+
+## Monitors
+
+Coming Soon
 
 ## Prior Art
 
