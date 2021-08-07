@@ -1,15 +1,26 @@
 import { useEffect, useRef } from "react";
 import { useDispatch, useStore } from "react-redux";
-import { Channel, runSaga } from "redux-saga";
+import { MulticastChannel, runSaga } from "redux-saga";
+import { empty } from "./empty";
 
 /* USE SELECTOR TO TRIGGER SAGA */
 export const makeUseSaga =
-  <T, TReturn, TNext>(channel: Channel<any>) =>
-  (saga: () => Generator<T, TReturn, TNext>, ownProps: Record<string, any>) => {
+  <T, TReturn, TNext>(channel: MulticastChannel<any>) =>
+  (
+    saga: () => Generator<T, TReturn, TNext>,
+    ownProps?: Record<string, unknown>,
+    context?: Record<string, unknown>
+  ) => {
     const dispatch = useDispatch();
     const store = useStore();
     const ref = useRef(saga);
-    const deps = [store, dispatch, ...Object.values(ownProps)];
+    const deps: any[] = [store, dispatch];
+    if (ownProps) {
+      deps.push(...Object.values(ownProps));
+    }
+    if (context) {
+      deps.push(context);
+    }
     useEffect(() => {
       const task = runSaga(
         {
@@ -19,7 +30,7 @@ export const makeUseSaga =
           },
           getState: store.getState.bind(store),
           channel,
-          context: { ownProps },
+          context: { ...context, ownProps },
         },
         ref.current as any
       );
