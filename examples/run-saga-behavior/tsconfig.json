@@ -1,0 +1,17 @@
+{
+  "include": ["./src/**/*"],
+  "exclude": ["node_modules", "dist"],
+  "compilerOptions": {
+    "jsx": "react",
+    "strict": true,
+    "esModuleInterop": true,
+    "downlevelIteration": true,
+    "lib": ["dom", "es2015"],
+    "outDir": "dist",
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "sourceMap": true,
+    "rootDir": "src",
+    "declaration": true
+  }
+}

@@ -6,9 +6,11 @@ Warning: This package is in beta and subject to change frequently check back oft
 
 dx-saga is a JavaScript library that allows redux-sagas to run on differences in state as opposed to actions.
 
-- trigger sagas based on differences in state, as opposed to actions, using `selectorChannel`
-- start and stop sagas when components mount and unmount using `useSaga`
-- provide `ownProps` to sagas using `useSaga`
+- Trigger sagas based on differences in state, as opposed to actions, using `selectorChannel`
+- Make component development simpler with `useSaga`
+  - Start and stop sagas when components mount and unmount
+  - Some effects, like takeLatest, have state. Ensure they work properly by having instances of sagas per component
+  - provide `ownProps` to sagas
 - serialize execution of code blocks using `monitor.lock`
 
 ## Installation

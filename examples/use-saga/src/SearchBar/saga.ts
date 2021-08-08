@@ -10,8 +10,8 @@ function* updateProgress(formKey: string, message: string) {
   const progressAction = formSlice.actions.onChangeValue({
     formKey,
     values: {
-      progressMessage: message
-    }
+      progressMessage: message,
+    },
   });
   yield* put(progressAction);
 }
@@ -28,7 +28,7 @@ function* handleSearchTextChanges(changes: ColorSearchChanges) {
   const matchedKeys = keys.filter((key) => key.includes(changes.text));
   const results = matchedKeys.map((key) => ({
     name: key,
-    value: lookup[key]
+    value: lookup[key],
   }));
 
   // simulate a long running request
@@ -44,8 +44,8 @@ function* handleSearchTextChanges(changes: ColorSearchChanges) {
   const foundResultAction = formSlice.actions.onChangeValue({
     formKey,
     values: {
-      results
-    }
+      results,
+    },
   });
   yield* put(foundResultAction);
 }
@@ -65,7 +65,7 @@ export function* watchColorSearchSaga() {
     const form = state.form[formKey];
     const changes: ColorSearchChanges = {
       formKey,
-      text: form?.text as string
+      text: form?.text as string,
     };
     return changes;
   });
