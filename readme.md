@@ -95,11 +95,9 @@ In the above example, `takeLatest` watches for action types to trigger sagas. Th
 
 ### Creating a selectorChannel
 
-We would like to replace `takeLatest(pattern, saga)`, which triggers when events occur, with a `selectorChannel` that triggers when changes occur in our selector.
+We would like to replace `takeLatest(pattern, saga)`, which triggers when events occur, with `takeLatest(channel, saga)` that triggers when changes occur in the subset of state returned by a selector.
 
-`dx-saga` provide as function `makeSelectorChannelFactory` that produces a function `selectorChannel` to create selector channels. Its any selector and will `emit` when properties returned from the selector change. Each of these emissions can be used by existing saga API to `takeEvery`, `takeLatests`, etc.
-
-Reselect provides a function `createSelector` for creating memoized selectors. `createSelector` takes an array of input-selectors and a transform function as its arguments. If the Redux state tree is mutated in a way that causes the value of an input-selector to change, the selector will call its transform function with the values of the input-selectors as arguments and return the result. If the values of the input-selectors are the same as the previous call to the selector, it will return the previously computed value instead of calling the transform function.
+`dx-saga` provides a function `makeSelectorChannelFactory` that produces a function `selectorChannel` to create selector channels. Its accepts any selector and will `emit` when subset of state returned by the selector changes. Each of these emissions can be used by existing saga API to `takeEvery`, `takeLatests`, etc.
 
 Let's define a selectorChannel named `searchChanges` to replace the action-pattern version above:
 
