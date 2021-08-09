@@ -6,20 +6,17 @@ Warning: This package is in beta and subject to change frequently check back oft
 
 dx-saga is a JavaScript library that allows redux-sagas to run on differences in state as opposed to actions.
 
-- handle side-effects based on state changes using `selectorChannel` as opposed to actions
-  - recalculate derived state stored in redux when input state changes
-  - recalculate IO acquired state when input state changes
-- Start and stop sagas with `useSaga`
+- `selectorChannel`
+  - run sagas when a subset of state changes as opposed to when actions are dispatched
+  - prevent extraneous side-effects by only running sagas when the subset of state used as inputs changes
+  - simplify sagas that take multiple actions as inputs by watching the state instead
+  - nextAction = F(select(state), saga) where select(state) ⊂ state when select(State) != select(nextState)
+- `useSaga`
   - Start and stop sagas when components mount and unmount
   - ensure effects, like takeLatest, have their own state per UI component
   - provide component identity and other props using the `ownProps` option
   - optionally provide a separate `context` from the saga middleware saga
 - serialize execution of code blocks using `monitor.lock`
-
-React -> UI = F(S);
-Redux -> Snext = F(S, action);
-Selectors -> S1 ⊂ S and S1 = F(S);
-Saga -> Nevent = F(action, saga) or F(S1delta, saga)
 
 ## Installation
 
