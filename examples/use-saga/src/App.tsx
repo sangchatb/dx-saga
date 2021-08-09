@@ -9,9 +9,11 @@ import { useSaga } from "./store/hooks";
 export function App() {
   const appRenderCount = useRenderCount();
   const Search = (props: { formKey: string }) => {
-    useSaga(watchColorSearchSaga, { formKey: props.formKey });
+    useSaga(watchColorSearchSaga, {
+      ownProps: { formKey: props.formKey },
+    });
     return (
-      <div className="App">
+      <div style={{ flex: 1 }}>
         <div
           style={{
             color: "white",
