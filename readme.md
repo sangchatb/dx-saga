@@ -18,6 +18,8 @@ dx-saga is a JavaScript library that allows redux-sagas to run on differences in
   - optionally provide a separate `context` from the saga middleware saga
 - serialize execution of code blocks using `monitor.lock`
 
+## `selectorChannel` usage
+
 ```typescript
 const getSearchChanges = (state: RootState): SearchChanges => {
   const { text, caseSensitive } = state.search;
