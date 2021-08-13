@@ -24,7 +24,7 @@ export const makeSelectorChannelFactory =
           return;
         }
         const isEqual = equalityFn(lastSelected, selected);
-        if (isEqual) {
+        if (isEqual === true) {
           return;
         }
         lastSelected = selected;
