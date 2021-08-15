@@ -12,9 +12,10 @@ actions to facilitate component development.
 Originally created to handle fetching viewport constrained chart data which requires watching many settings and cancellation of side-effects.
 
 - `selectorChannel` [[example]](#selectorchannel-usage-example)
-  - extraneous side-effects can be prevented by running sagas only when the selected state changes [Extraneous Side-Effects](#extraneous-side-effects-using-action-patterns)
-  - multiple actions that affect a saga's input can be simplified by replacing action patterns [Multiple Actions]
-  - overloaded actions that affect a saga's input can be simplified by replacing action patterns [Overloaded Actions]
+  - only run sagas when selected state changes
+  - extraneous side-effects can be prevented by running sagas [[Extraneous Side-Effects]](#extraneous-side-effects-using-action-patterns)
+  - multiple actions that affect a saga's input can be simplified [[Multiple Actions]](#multiple-actions-using-action-patterns)
+  - overloaded actions that affect a saga's input can be simplified [[Overloaded Actions]](#overloaded-actions-using-action-patterns)
   - simplify component development when combined with `useSaga`
   - nextAction = F(select(state), saga) where select(state) ⊂ state when select(State) != select(nextState)
 - `useSaga` [[example]](#combined-selectorchannel--usesaga-example-usage)
