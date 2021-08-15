@@ -28,6 +28,11 @@ Originally created to handle fetching viewport constrained chart data which requ
 ## `selectorChannel` Usage Example
 
 ```typescript
+// store.ts
+// connect selector channel to the store.
+export const selectorChannel = makeSelectorChannelFactory(store);
+
+// saga.ts
 const getSearchChanges = (state: RootState): SearchChanges => {
   const { text, caseSensitive } = state.search;
   return { text, caseSensitive };
@@ -299,9 +304,13 @@ sagaMiddleware.run(watchSearchSagas);
     - compares the selected states in plain ol' JavaScript
     - Performance should be on par with reselect comparisons
 - other `useSaga` implementations
+
   - opted to re-implement:
+
     - allows for separate IO and context
     - preserves the ability to `take` actions from global sagas
+
+    https://github.com/redux-saga/redux-saga/issues/1974
 
 ## Notes
 
