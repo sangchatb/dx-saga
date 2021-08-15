@@ -9,15 +9,17 @@ actions to facilitate component development.
 
 Originally created to handle fetching viewport constrained chart data which requires watching many settings and cancellation of side-effects.
 
+[Live Demo](https://codesandbox.io/s/dx-saga-0xq0m)
+
 - `selectorChannel`
-  - prevent extraneous side-effects by only running sagas when the selected state changes
+  - prevent extraneous side-effects by only running sagas when the selected state changes[example](#selectorchannel-usage-example)
   - simplify sagas that watch multiple actions as inputs by watching the state instead
   - simplify component development when combined with `useSaga`
   - nextAction = F(select(state), saga) where select(state) ⊂ state when select(State) != select(nextState)
 - `useSaga`
   - Start and stop sagas when components mount and unmount
   - ensure effects, like takeLatest, have their own state so actions from other UI components don't cancel another components side-effect. [global takeX test](examples/run-saga-behavior/src/take-global/take-state.test.ts) vs [ui instance takeX test](examples/run-saga-behavior/src/take-ui-instance/take-instance.test.ts)
-  - provide `ownProps` to the saga and any selector it uses [useSaga](examples/use-saga/src/App.tsx) [getContext('ownProps')](examples/use-saga/src/SearchBar/saga.ts)
+  - provide `ownProps` to the saga and any selector it uses [example](#combined-selectorchannel--usesaga-example-usage)
   - optionally provide a separate `context` and `io` from the global saga middleware
 - serialize execution of code blocks globally using `monitor.enter/exit`
 
@@ -234,9 +236,7 @@ In the example above, `searchChanges` is a `selectorChannel`. It tracks differen
 
 ## Contributing
 
-Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
-
-Please make sure to update tests as appropriate.
+TBD
 
 ## License
 
