@@ -4,21 +4,24 @@ Warning: This package is in beta and subject to change frequently check back oft
 
 [![npm version](https://badge.fury.io/js/dx-saga.svg)](https://www.npmjs.com/package/dx-saga)
 
-dx-saga is a JavaScript library that allows redux-sagas to run on differences in state as opposed to actions.
+dx-saga is a JavaScript library that allows redux-sagas to run on differences in state as opposed to
+actions to facilitate component development.
+
+Originally created to handle fetching viewport constrained chart data which requires watching many settings and cancellation of side-effects.
 
 - `selectorChannel`
-  - run sagas when a subset of state changes as opposed to when actions are dispatched
-  - prevent extraneous side-effects by only running sagas when the subset of state used as inputs changes
-  - simplify sagas that take multiple actions as inputs by watching the state instead
+  - prevent extraneous side-effects by only running sagas when the selected state changes
+  - simplify sagas that watch multiple actions as inputs by watching the state instead
+  - simplify component development when combined with `useSaga`
   - nextAction = F(select(state), saga) where select(state) ⊂ state when select(State) != select(nextState)
 - `useSaga`
   - Start and stop sagas when components mount and unmount
-  - ensure effects, like takeLatest, have their own state per UI component
-  - provide component identity and other props using the `ownProps` option
-  - optionally provide a separate `context` from the saga middleware saga
-- serialize execution of code blocks using `monitor.lock`
+  - ensure effects, like takeLatest, have their own state so actions from other UI components don't cancel another components side-effect. [global takeX test](examples/run-saga-behavior/src/take-global/take-state.test.ts) vs [ui instance takeX test](examples/run-saga-behavior/src/take-ui-instance/take-instance.test.ts)
+  - provide `ownProps` to the saga and any selector it uses [useSaga](examples/use-saga/src/App.tsx) [getContext('ownProps')](examples/use-saga/src/SearchBar/saga.ts)
+  - optionally provide a separate `context` and `io` from the global saga middleware
+- serialize execution of code blocks globally using `monitor.enter/exit`
 
-## `selectorChannel` usage
+## `selectorChannel` Usage Example
 
 ```typescript
 const getSearchChanges = (state: RootState): SearchChanges => {
@@ -35,6 +38,85 @@ function* watchSearchSagas() {
   const searchChanges = selectorChannel(getSearchChanges);
   /* USE WHERE PATTERNS ARE USED */
   yield* takeLatest(searchChanges, handleSearchChanges);
+}
+```
+
+## Combined `selectorChannel` & `useSaga` Example Usage
+
+```typescript
+export const mainChannel = stdChannel() as Channel<any>;
+
+// we have to ignore the typescript error until channel is added to the d.ts.
+const sagaMiddleware = createSagaMiddleware({
+  // @ts-ignore
+  channel: mainChannel,
+});
+
+// generate `useSaga` function
+export const useSaga = makeUseSaga(mainChannel);
+
+// connect selector channel to the store
+export const selectorChannel = makeSelectorChannelFactory(store);
+```
+
+#### `Search.tsx` [full source](examples/use-saga/src/Search/Search.tsx)
+
+```typescript
+export const Search = (props: { formKey: string }) => {
+  const renderCount = useRenderCount();
+
+  /* start a saga fo reach `Search` component instance with `ownProps` */
+  useSaga(watchSearchSaga, {
+    ownProps: { formKey: props.formKey },
+  });
+
+  return (
+    <div style={{ flex: 1 }}>
+      <div
+        style={{
+          color: "white",
+          backgroundColor: "blue",
+        }}
+      >
+        {props.formKey} render count: {renderCount}
+      </div>
+      <SearchBar formKey={props.formKey} />
+      <div>
+        <Now />
+      </div>
+      <SearchResult formKey={props.formKey} />
+    </div>
+  );
+};
+```
+
+#### `saga.ts` [full source](examples/use-saga/src/Search/saga.ts)
+
+```typescript
+export interface SearchChanges {
+  formKey: string;
+  text: string;
+}
+
+export const getSearch = (state: RootState, ownProps: any) => {
+  const { formKey } = ownProps;
+  const form = state.form[formKey];
+  const changes: SearchChanges = {
+    formKey,
+    text: form?.text || empty.string,
+  };
+  return changes;
+};
+
+export function* watchSearchSaga() {
+  // get `ownProps` from useSaga
+  const ownProps: any = yield* getContext("ownProps");
+
+  // create a channel on any selector.
+  const searchTextChanges = selectorChannel((state) =>
+    getSearch(state, ownProps)
+  );
+  yield* takeLatest(searchTextChanges, handleSearchTextChanges);
 }
 ```
 
@@ -99,7 +181,7 @@ In the above example, `takeLatest` watches for action types to trigger sagas. Th
 
 We would like to replace `takeLatest(pattern, saga)`, which triggers when events occur, with `takeLatest(channel, saga)` that triggers when changes occur in the subset of state returned by a selector.
 
-`dx-saga` provides a function `makeSelectorChannelFactory` that produces a function `selectorChannel` to create selector channels. Its accepts any selector and will `emit` when subset of state returned by the selector changes. Each of these emissions can be used by existing saga API to `takeEvery`, `takeLatests`, etc.
+`dx-saga` provides a function `makeSelectorChannelFactory` that produces a function `selectorChannel` to create selector channels. Its accepts any selector and will `emit` when subset of state returned by the selector changes. Each of these emissions can be used by existing saga API to `takeEvery`, `takeLatest`, etc.
 
 Let's define a selectorChannel named `searchChanges` to replace the action-pattern version above:
 
@@ -126,7 +208,7 @@ function* handleSearchChanges(searchChanges: SearchChanges) {
 function* watchSearchSagas() {
   /* HANDLE CHANGES TO STATE AS OPPOSED TO ACTIONS. ACCEPTS ANY SELECTOR */
   const searchChanges = selectorChannel(getSearchChanges);
-  /* USE WHERE PATTERNS ARE USED */
+  /* USE CHANNELS WHERE PATTERNS ARE USED */
   yield* takeLatest(searchChanges, handleSearchChanges);
 }
 
@@ -144,20 +226,11 @@ store.dispatch(action2);
 
 In the example above, `searchChanges` is a `selectorChannel`. It tracks differences in the state provided by `getSearchChanges`. It's provided to `takeLatest` which will trigger `handleSearchChanges` when it detects changes. Since it's provided as a channel, any `takeX` effect can be used. `takeLatest` will also cancel any `handleSearchChanges` side-effects that are still executing.
 
-## useSaga
-
-Coming Soon
-
-## Monitors
-
-Coming Soon
-
 ## Prior Art
 
-- rxjs - Requires learning new control flow semantics. I found it very complex for simple tasks.
+- rxjs - This idea started with observables, but it requires learning new control flow semantics.
 - redux-saga - Preserves well known control flow semantics for async tasks
-- selector-channel - https://github.com/redux-saga/redux-saga/issues/1694 - opted for an implementation that compares the diff outside of sagas.
-- more to come...
+- selector-channel - https://github.com/redux-saga/redux-saga/issues/1694 - opted for an implementation that compares the selected states outside of sagas, allows for separate IO and context.
 
 ## Contributing
 

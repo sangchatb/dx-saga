@@ -3,6 +3,8 @@ import { ChangeValuesPayload, formSlice } from "../form/slice";
 import { selectorChannel } from "../store/selector-channel";
 import * as colors from "color-name";
 import { AnyAction, PayloadAction } from "@reduxjs/toolkit";
+import { RootState } from "../store/store";
+import { empty } from "../empty";
 
 const lookup = colors as Record<string, colors.RGB>;
 
@@ -16,7 +18,7 @@ function* updateProgress(formKey: string, message: string) {
   yield* put(progressAction);
 }
 
-function* handleSearchTextChanges(changes: ColorSearchChanges) {
+function* handleSearchTextChanges(changes: SearchChanges) {
   const { formKey } = changes;
   // debounce.
   yield* delay(300);
@@ -50,38 +52,28 @@ function* handleSearchTextChanges(changes: ColorSearchChanges) {
   yield* put(foundResultAction);
 }
 
-export interface ColorSearchChanges {
+export interface SearchChanges {
   formKey: string;
   text: string;
 }
 
-export function* watchColorSearchSaga() {
-  // get props from useSaga
+export const getSearch = (state: RootState, ownProps: any) => {
+  const { formKey } = ownProps;
+  const form = state.form[formKey];
+  const changes: SearchChanges = {
+    formKey,
+    text: form?.text || empty.string,
+  };
+  return changes;
+};
+
+export function* watchSearchSaga() {
+  // get `ownProps` from useSaga
   const ownProps: any = yield* getContext("ownProps");
 
   // create a channel on any selector.
-  const searchTextChanges = selectorChannel((state) => {
-    const { formKey } = ownProps;
-    const form = state.form[formKey];
-    const changes: ColorSearchChanges = {
-      formKey,
-      text: form?.text as string,
-    };
-    return changes;
-  });
-  yield* takeLatest(searchTextChanges, handleSearchTextChanges);
-  yield* takeLatest(
-    (action: AnyAction) => {
-      console.log(`blah ${JSON.stringify(action)}`);
-      return true;
-    },
-    function* (action: PayloadAction<ChangeValuesPayload>) {
-      yield* delay(1);
-      console.log(
-        `You can still handle actions from global sagas ${JSON.stringify(
-          action
-        )}`
-      );
-    }
+  const searchTextChanges = selectorChannel((state) =>
+    getSearch(state, ownProps)
   );
+  yield* takeLatest(searchTextChanges, handleSearchTextChanges);
 }

@@ -1,9 +1,8 @@
-import { configureStore } from "@reduxjs/toolkit";
 import { expect } from "chai";
-import createSagaMiddleware, { runSaga } from "redux-saga";
+import { runSaga } from "redux-saga";
 import { watchInstanceSearchSagas } from "./saga";
 import { searchSlice } from "./slice";
-import { store, store as storeInstance } from "./store";
+import { store } from "./store";
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
