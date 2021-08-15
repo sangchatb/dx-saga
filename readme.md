@@ -17,10 +17,10 @@ Originally created to handle fetching viewport constrained chart data which requ
   - overloaded actions that affect a saga's input can be simplified by replacing action patterns [Overloaded Actions]
   - simplify component development when combined with `useSaga`
   - nextAction = F(select(state), saga) where select(state) ⊂ state when select(State) != select(nextState)
-- `useSaga`
+- `useSaga` [[example]](#combined-selectorchannel--usesaga-example-usage)
   - Start and stop sagas when components mount and unmount
   - prevent extraneous cancellations when using `takeLatest`, `takeLeading`, etc. [[global takeX test]](examples/run-saga-behavior/src/take-global/take-state.test.ts) vs [[ui instance takeX test]](examples/run-saga-behavior/src/take-ui-instance/take-instance.test.ts)
-  - provide `ownProps` to the saga and any selector it uses [[example]](#combined-selectorchannel--usesaga-example-usage)
+  - provide `ownProps` to the saga and any selector it uses
   - optionally provide a separate `context` and `io` from the global saga middleware
 - serialize execution of code blocks globally using `monitor.enter/exit`
 
