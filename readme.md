@@ -12,7 +12,7 @@ actions to facilitate component development.
 Originally created to handle fetching viewport constrained chart data which requires watching many settings and cancellation of side-effects.
 
 - `selectorChannel` [[example]](#selectorchannel-usage-example)
-  - extraneous side-effects can be prevented by running sagas only when the selected state changes [Extraneous Side-Effects]
+  - extraneous side-effects can be prevented by running sagas only when the selected state changes [Extraneous Side-Effects](#extraneous-side-effects-using-action-patterns)
   - multiple actions that affect a saga's input can be simplified by replacing action patterns [Multiple Actions]
   - overloaded actions that affect a saga's input can be simplified by replacing action patterns [Overloaded Actions]
   - simplify component development when combined with `useSaga`
