@@ -291,13 +291,15 @@ sagaMiddleware.run(watchSearchSagas);
 
 ## Prior Art
 
-- rxjs - This idea started with observables, but it requires learning new control flow semantics.
+- rxjs - This idea started with observables, but it requires learning new control flow semantics
 - redux-saga - Preserves well known control flow semantics for async tasks
-- selector-channel - https://github.com/redux-saga/redux-saga/issues/1694 -
+- https://github.com/redux-saga/redux-saga/issues/1694
   - found this while researching existing solutions
-  - opted to re-implement for a few reasons:
+  - opted to re-implement as a channel for a few reasons:
     - compares the selected states in plain ol' JavaScript
     - Performance should be on par with reselect comparisons
+- other `useSaga` implementations
+  - opted to re-implement:
     - allows for separate IO and context
     - preserves the ability to `take` actions from global sagas
 
