@@ -7,18 +7,19 @@ Warning: This package is in beta and subject to change frequently check back oft
 dx-saga is a JavaScript library that allows redux-sagas to run on differences in state as opposed to
 actions to facilitate component development.
 
+[Search Colors - Live Demo](https://codesandbox.io/s/dx-saga-0xq0m)
+
 Originally created to handle fetching viewport constrained chart data which requires watching many settings and cancellation of side-effects.
 
-[Live Demo](https://codesandbox.io/s/dx-saga-0xq0m)
-
-- `selectorChannel`
-  - prevent extraneous side-effects by only running sagas when the selected state changes [[example]](#selectorchannel-usage-example)
-  - simplify sagas that watch multiple actions as inputs by watching the state instead
+- `selectorChannel` [[example]](#selectorchannel-usage-example)
+  - extraneous side-effects can be prevented by running sagas only when the selected state changes [Extraneous Side-Effects]
+  - multiple actions that affect a saga's input can be simplified by replacing action patterns [Multiple Actions]
+  - overloaded actions that affect a saga's input can be simplified by replacing action patterns [Overloaded Actions]
   - simplify component development when combined with `useSaga`
   - nextAction = F(select(state), saga) where select(state) ⊂ state when select(State) != select(nextState)
 - `useSaga`
   - Start and stop sagas when components mount and unmount
-  - ensure effects, like takeLatest, have their own state so actions from other UI components don't cancel another components side-effect. [[global takeX test]](examples/run-saga-behavior/src/take-global/take-state.test.ts) vs [[ui instance takeX test]](examples/run-saga-behavior/src/take-ui-instance/take-instance.test.ts)
+  - prevent extraneous cancellations when using `takeLatest`, `takeLeading`, etc. [[global takeX test]](examples/run-saga-behavior/src/take-global/take-state.test.ts) vs [[ui instance takeX test]](examples/run-saga-behavior/src/take-ui-instance/take-instance.test.ts)
   - provide `ownProps` to the saga and any selector it uses [[example]](#combined-selectorchannel--usesaga-example-usage)
   - optionally provide a separate `context` and `io` from the global saga middleware
 - serialize execution of code blocks globally using `monitor.enter/exit`
@@ -137,14 +138,169 @@ or
 yarn add dx-saga
 ```
 
+## Improving on some Existing Patterns
+
+Below are some patterns dx-saga tries to improve
+
+## Overloaded Actions using Action Patterns
+
+[[Live Demo & Full Source]](https://codesandbox.io/s/overloaded-actions-8ygqh?file=/src/index.tsx:2520-2539)
+
+```typescript
+const getSearchChanges = (state: RootState): SearchChanges => {
+  const text = state.value.text as string;
+  return { text };
+};
+
+function* handleSearchChanges() {
+  debug("delay");
+  yield* delay(500);
+  // select all the state that's required to handle the side-effect.
+  const searchChanges = yield* select(getSearchChanges);
+
+  debug(`handleSearchChanges ${JSON.stringify(searchChanges)}`);
+}
+
+function* watchSearchSagas() {
+  /* there are a few options here:
+   * action patterns - which will result in extraneous side-effects
+   * function - which would allow us to inspect the action for changes
+   *    to the 'text' value, but it's a bit messy and doesn't prevent side-effects
+   *    when the state doesn't actually change.
+   * selectorChannel - which is probably the most desirable pattern since
+   *    it lets us reuse the selector and only triggers on a diff.
+   */
+  yield* takeLatest(valueSlice.actions.onChangeValue.type, handleSearchChanges);
+}
+
+sagaMiddleware.run(watchSearchSagas);
+
+(async () => {
+  /* change text */
+  const action1 = valueSlice.actions.onChangeValue({ text: "foo" });
+  store.dispatch(action1);
+  await sleep(100);
+
+  /* let's change a different value with the same action. this will result in
+   * an extraneous cancelation */
+  const action2 = valueSlice.actions.onChangeValue({ someOtherValue: "baz" });
+  store.dispatch(action2);
+
+  /* this results in 2 delays, 1 cancellation and 1 handle
+   * it could have been 1 delay and 1 handle
+   */
+})();
+```
+
+## Multiple Actions using Action Patterns
+
+When watching multiple actions, it's implied all the state that affects a saga is not included in a single action. This means
+that the subset of state that affects the saga must be `select`ed in the saga. Replacing the action patterns with a `selectorChannel`
+would simplify the saga by removing the action pattern list and moving the `select` into the `selectorChannel`. There would be no
+opportunity to erroneously exclude an an action pattern or trigger a saga when the state didn't actual change.
+
+[[Live Demo & Full Source]](https://codesandbox.io/s/take-latest-action-pattern-tux36?file=/src/index.tsx)
+
+```typescript
+const getSearchChanges = (state: RootState): SearchChanges => {
+  const { text, caseSensitive } = state.search;
+  return { text, caseSensitive };
+};
+
+function* handleSearchChanges() {
+  debug("delay");
+  yield* delay(500);
+
+  // The state that affects the saga must be selected anyway.
+  const searchChanges = yield* select(getSearchChanges);
+
+  debug(`handleSearchChanges ${JSON.stringify(searchChanges)}`);
+}
+
+function* watchSearchSagas() {
+  // watching multiple actions requires selecting complete state
+  // in the handleSearchChanges saga. If there are no differences
+  // this will be an extraneous side-effect trigger as well.
+  yield* takeLatest(
+    [
+      searchSlice.actions.onChangeCaseSensitive.type,
+      searchSlice.actions.onChangeText.type,
+    ],
+    handleSearchChanges
+  );
+}
+
+sagaMiddleware.run(watchSearchSagas);
+
+(async () => {
+  /* change text */
+  const action1 = searchSlice.actions.onChangeText("foo");
+  store.dispatch(action1);
+  await sleep(100);
+
+  /* change case sensitivity*/
+  const action2 = searchSlice.actions.onChangeCaseSensitive(true);
+  store.dispatch(action2);
+  await sleep(100);
+})();
+```
+
+## Extraneous side-effects using Action Patterns
+
+[[Live Demo & Full Source]](https://codesandbox.io/s/extraneous-side-effects-4y9k3?file=/src/index.tsx)
+
+```typescript
+const getSearchChanges = (state: RootState): SearchChanges => {
+  const { text } = state.search;
+  return { text };
+};
+
+function* handleSearchChanges() {
+  debug("delay");
+  yield* delay(500);
+  // select all the state that's required to handle the side-effect.
+  const searchChanges = yield* select(getSearchChanges);
+
+  debug(`handleSearchChanges ${JSON.stringify(searchChanges)}`);
+}
+
+function* watchSearchSagas() {
+  yield* takeLatest(searchSlice.actions.onChangeText.type, handleSearchChanges);
+}
+
+sagaMiddleware.run(watchSearchSagas);
+
+(async () => {
+  /* change text */
+  const action1 = searchSlice.actions.onChangeText("foo");
+  store.dispatch(action1);
+  await sleep(100);
+
+  /* let's change text again, but not actually change the
+   * value. Even though the state object equality doesn't change,
+   * this will result in an extraneous side-effect */
+  const action2 = searchSlice.actions.onChangeText("foo");
+  store.dispatch(action2);
+
+  /* this results in 2 delays, 1 cancellation and 1 handle, when
+   * it could have been 1 delay and 1 handle
+   */
+})();
+```
+
 ## Prior Art
 
 - rxjs - This idea started with observables, but it requires learning new control flow semantics.
 - redux-saga - Preserves well known control flow semantics for async tasks
 - selector-channel - https://github.com/redux-saga/redux-saga/issues/1694 - opted to re-implement for a few reasons:
-  - compares the selected states in plain ol' JavaScript. Performance should be on par with reselect comparisons
+  - compares the selected states in plain ol' JavaScript
+  - Performance should be on par with reselect comparisons
   - allows for separate IO and context
-  - preserves the ability to `take` from the global sagas
+  - preserves the ability to `take` actions from global sagas
+
+## Notes
+
+- this may cause extraneous side-effect processing if time-traveling is used extensively? Arguably no sagas should run on historical state versions. Maybe this should be solved by redux-saga if it hasn't already. Haven't tested it, yet.
 
 ## Contributing
 
