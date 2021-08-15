@@ -12,14 +12,14 @@ Originally created to handle fetching viewport constrained chart data which requ
 [Live Demo](https://codesandbox.io/s/dx-saga-0xq0m)
 
 - `selectorChannel`
-  - prevent extraneous side-effects by only running sagas when the selected state changes[example](#selectorchannel-usage-example)
+  - prevent extraneous side-effects by only running sagas when the selected state changes [[example]](#selectorchannel-usage-example)
   - simplify sagas that watch multiple actions as inputs by watching the state instead
   - simplify component development when combined with `useSaga`
   - nextAction = F(select(state), saga) where select(state) ⊂ state when select(State) != select(nextState)
 - `useSaga`
   - Start and stop sagas when components mount and unmount
-  - ensure effects, like takeLatest, have their own state so actions from other UI components don't cancel another components side-effect. [global takeX test](examples/run-saga-behavior/src/take-global/take-state.test.ts) vs [ui instance takeX test](examples/run-saga-behavior/src/take-ui-instance/take-instance.test.ts)
-  - provide `ownProps` to the saga and any selector it uses [example](#combined-selectorchannel--usesaga-example-usage)
+  - ensure effects, like takeLatest, have their own state so actions from other UI components don't cancel another components side-effect. [[global takeX test]](examples/run-saga-behavior/src/take-global/take-state.test.ts) vs [[ui instance takeX test]](examples/run-saga-behavior/src/take-ui-instance/take-instance.test.ts)
+  - provide `ownProps` to the saga and any selector it uses [[example]](#combined-selectorchannel--usesaga-example-usage)
   - optionally provide a separate `context` and `io` from the global saga middleware
 - serialize execution of code blocks globally using `monitor.enter/exit`
 
@@ -36,9 +36,10 @@ function* handleSearchChanges(searchChanges: SearchChanges) {
 }
 
 function* watchSearchSagas() {
-  /* HANDLE CHANGES TO STATE AS OPPOSED TO ACTIONS. ACCEPTS ANY SELECTOR */
+  /* handle changes to state as opposed to action patterns. accepts _any_ selector */
   const searchChanges = selectorChannel(getSearchChanges);
-  /* USE WHERE PATTERNS ARE USED */
+
+  /* use channels where patterns are used */
   yield* takeLatest(searchChanges, handleSearchChanges);
 }
 ```
@@ -232,7 +233,10 @@ In the example above, `searchChanges` is a `selectorChannel`. It tracks differen
 
 - rxjs - This idea started with observables, but it requires learning new control flow semantics.
 - redux-saga - Preserves well known control flow semantics for async tasks
-- selector-channel - https://github.com/redux-saga/redux-saga/issues/1694 - opted for an implementation that compares the selected states outside of sagas, allows for separate IO and context.
+- selector-channel - https://github.com/redux-saga/redux-saga/issues/1694 - opted to re-implement for a few reasons:
+  - compares the selected states outside of sagas
+  - allows for separate IO and context
+  - preserves the ability to `take` from the global sagas
 
 ## Contributing
 
