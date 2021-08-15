@@ -289,7 +289,7 @@ sagaMiddleware.run(watchSearchSagas);
 })();
 ```
 
-## Prior Art
+## References
 
 - rxjs - This idea started with observables, but it requires learning new control flow semantics
 - redux-saga - Preserves well known control flow semantics for async tasks
